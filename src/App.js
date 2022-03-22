@@ -1,10 +1,14 @@
 import React, { useState, useRef } from "react";
 import SignaturePad from "react-signature-canvas";
 import mergeImages from "merge-images";
-import "./App.css";
-import styles from "./styles.module.css";
 import Controls from "./components/Controls/Controls";
-// import SingleUpload from "./components/SingleUpload/SingleUpload";
+import "./App.css";
+
+import {
+  INFO_MESSAGE_DRAW,
+  INFO_MESSAGE_UPLOAD,
+  INFO_MESSAGE_MERGE,
+} from "./constants/infoConstants";
 
 const fileToDataUri = (file) =>
   new Promise((resolve, reject) => {
@@ -17,10 +21,12 @@ const fileToDataUri = (file) =>
 
 function App() {
   const sigPad = useRef({});
+  const finalResult = useRef(null);
   const [signatureDataURL, setSignatureDataURL] = useState(0);
   const [imageDataURL, setImageDataURL] = useState(0);
   const [outputImageURL, setOutputImageURL] = useState(0);
   const [showUploadBtn, setShowUploadBtn] = useState(false);
+  const [info, setInfo] = useState(null);
 
   const [x, setX] = useState(0);
   const [y, setY] = useState(0);
@@ -33,6 +39,7 @@ function App() {
     if (!imageDataURL) {
       setShowUploadBtn(true);
     }
+    handleInfo(INFO_MESSAGE_UPLOAD);
   };
 
   const mergeSignatureAndImage = () => {
@@ -48,6 +55,7 @@ function App() {
     )
       .then((b64) => {
         setOutputImageURL(b64);
+        scrollToImage();
       })
       .catch((error) => console.log(error));
   };
@@ -58,6 +66,7 @@ function App() {
     setImageDataURL("");
     setOutputImageURL("");
     setShowUploadBtn(false);
+    handleInfo(INFO_MESSAGE_DRAW);
   };
 
   const onFileUpload = (file) => {
@@ -71,6 +80,24 @@ function App() {
     });
 
     setShowUploadBtn(false);
+    handleInfo(INFO_MESSAGE_MERGE);
+  };
+
+  const handleInfo = (string) => {
+    switch (string) {
+      case INFO_MESSAGE_DRAW:
+        setInfo(INFO_MESSAGE_DRAW);
+        break;
+      case INFO_MESSAGE_UPLOAD:
+        setInfo(INFO_MESSAGE_UPLOAD);
+        break;
+      case INFO_MESSAGE_MERGE:
+        setInfo(INFO_MESSAGE_MERGE);
+        break;
+
+      default:
+        break;
+    }
   };
 
   const handleXY = (event) => {
@@ -78,70 +105,77 @@ function App() {
     if (event.target.id === "y") setY(event.target.value);
   };
 
+  const scrollToImage = () => {
+    finalResult.current.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
+
   return (
-    <div>
-      <div className={styles.main_container}>
-        <div className={styles.sigContainer}>
-          <SignaturePad
-            canvasProps={{ className: styles.sigPad }}
-            ref={sigPad}
-            onEnd={updateCanvasURL}
-          />
-        </div>
+    <>
+      <div className="main_container">
+        <SignaturePad
+          canvasProps={{ className: "sigPad" }}
+          ref={sigPad}
+          onEnd={updateCanvasURL}
+        />
+
         <Controls
           onClearSig={clearSignaturePad}
           signatureDataURL={signatureDataURL}
           imageDataURL={imageDataURL}
           handleXY={handleXY}
+          mergeSignatureAndImage={mergeSignatureAndImage}
+          info={info}
+          handleInfo={handleInfo}
         ></Controls>
 
-        <div className="row">
-          <div className="col">
-            {signatureDataURL ? (
-              <img
-                className={styles.sigImage}
-                src={signatureDataURL}
-                alt={"pdf-sig"}
-              />
-            ) : null}
-          </div>
+        <section className="results">
+          {/* SIGNATURE IMAGE */}
+          {signatureDataURL ? (
+            <img className="sigImage" src={signatureDataURL} alt={"pdf-sig"} />
+          ) : null}
 
-          <div className="col">
-            {imageDataURL ? (
-              <img width="500" height="500" src={imageDataURL} alt="avatar" />
-            ) : null}
-          </div>
+          {/* MERGE BUTTON */}
+          {signatureDataURL && imageDataURL ? (
+            <button
+              className="control_btn merge"
+              onClick={mergeSignatureAndImage}
+            >
+              Merge images
+            </button>
+          ) : null}
 
-          <div className="col">
-            {showUploadBtn ? (
-              <input
-                type="file"
-                onChange={(event) =>
-                  onFileUpload(event.target.files[0] || null)
-                }
-              />
-            ) : null}
-          </div>
+          {imageDataURL ? (
+            <img className="sigImage" src={imageDataURL} alt="avatar" />
+          ) : null}
 
-          <div className="col">
-            {signatureDataURL && imageDataURL ? (
-              <button
-                className={styles.buttons}
-                onClick={mergeSignatureAndImage}
-              >
-                Merge
-              </button>
-            ) : null}
-          </div>
+          {/* FILE UPLOAD */}
 
-          <div className="col">
-            {outputImageURL ? (
-              <img width="275" height="275" src={outputImageURL} alt="avatar" />
-            ) : null}
-          </div>
-        </div>
+          {showUploadBtn ? (
+            <div className="file-upload-wrapper">
+              <div className="file-upload">
+                <input
+                  type="file"
+                  onChange={(event) =>
+                    onFileUpload(event.target.files[0] || null)
+                  }
+                />
+                <i className="fa fa-arrow-up"></i>
+              </div>
+            </div>
+          ) : null}
+
+          {/* FINAL IMAGE */}
+          {outputImageURL ? (
+            <div>
+              <img width="500" height="500" src={outputImageURL} alt="avatar" />
+              <div ref={finalResult}></div>
+            </div>
+          ) : null}
+        </section>
       </div>
-    </div>
+    </>
   );
 }
 

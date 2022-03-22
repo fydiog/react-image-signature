@@ -2,9 +2,9 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Demo
+## Demonstration
 
-![Demo](https://i.gyazo.com/53a485939e19eed1f5b449b129aa608c.gif)
+![Demo](https://i.gyazo.com/419601c0aca66a0893612284d5849b62.gif)
 
 ## Available Scripts
 
