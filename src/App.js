@@ -57,7 +57,7 @@ function App() {
     setSignatureDataURL("");
     setImageDataURL("");
     setOutputImageURL("");
-    showUploadBtn(false);
+    setShowUploadBtn(false);
   };
 
   const onFileUpload = (file) => {

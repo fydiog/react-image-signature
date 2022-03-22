@@ -1,6 +1,10 @@
-# Getting Started with Create React App
+# React Merge Signature & Image
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Demo
+
+![Demo](https://i.gyazo.com/53a485939e19eed1f5b449b129aa608c.gif)
 
 ## Available Scripts
 
